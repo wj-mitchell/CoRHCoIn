@@ -20,10 +20,10 @@
   <script src="jspsych_v7.0/dist/plugin-html-button-response.js"></script>
   <script src="jspsych_v7.0/dist/plugin-html-button-response.js"></script>
   <script src="jspsych_v7.0/dist/plugin-image-button-response-modified.js"></script>
-  <script src="jspsych_v7.0/dist/plugin-image-slider-response-modified.js"></script>
+  <script src="jspsych_v7.0/dist/plugin-html-slider-response.js"></script>
   <script src="jspsych_v7.0/dist/plugin-image-keyboard-response-modified.js"></script>
   <script src="jspsych_v7.0/dist/plugin-html-keyboard-response.js"></script>
-  <script src="jspsych_v7.0/dist/plugin-video-keyboard-response.js"></script>
+  <script src="jspsych_v7.0/dist/plugin-video-rating-continuous.js"></script>
   <script src="https://pavlovia.org/lib/jspsych-7-pavlovia-2022.1.1.js"></script>
   <link rel="stylesheet" href="jspsych_v7.0/dist/jspsych.css">
   <link rel="stylesheet" href="jspsych_v7.0/dist/jspsych-modified.css">
@@ -60,7 +60,7 @@
       const params = new URLSearchParams(url.search);
           
       // Getting which break scheme should be used with this subject 
-      const break_id = 'DH-' + ("00" + ((params.get('participant') - 65) % 110)).slice(-3);
+      const cond = (params.get('participant') % 4);
       
       // Get the value associated with the 'id' parameter
       if (sona){
@@ -69,14 +69,11 @@
         subject_id = params.get('PROLIFIC_PID');
       }
     } else {
-      break_id = 'DH-999'
+      cond = 0
       subject_id = '99999'
     }
     
   </script>
-
-<!-- Loading in text, scales, labels, & functions  -->    
-<script src="components/video_breaks/break_ids.js"></script>
 
 </head>
 
@@ -99,7 +96,7 @@ var jsPsych = initJsPsych({
   on_finish: function() {
 
     if (sona){
-      window.location = "https://temple.sona-systems.com/webstudy_credit.aspx?experiment_id=1087&credit_token=7e3a50f39c404537acdb2effbabc0b6c&survey_code=" + subject_id
+      window.location = [ADD SONA URL HERE] + subject_id
     } else {
       window.location = ""
     }
@@ -129,7 +126,7 @@ const height = 700;
 const img_size = 300;
 
 // Assigning scale values
-var minimum = -100
+var minimum = 0
 var maximum = 100
 var start = 0
 var slider_width = 700
@@ -154,30 +151,10 @@ const size_scale_questions = "<p style='font-size: 22px; line-height: 24px;'>"
 const style_response_labels = '<p style="font-size: 26px; line-height: 30px;">'
 
 // Creating an array to document character names\
-// NOTE: Chelsea doesn't want Elena included as of 10/24/24 over concerns that she represents a different level of construal for the guilt innoncence question than does other characters. 
-var names = [//'Elena Alves', 
-             'Fernando Alves', 'Franklin Reinhardt', 'Grace Fraser', 
-             'Henry Fraser', 'Jonathan Fraser', 'Miguel Alves', 'Sylvia Steinetz'];
+var names = ['Fernando Alves', 'Franklin Reinhardt', 'Grace Fraser', 'Jonathan Fraser'];
 
 // Creating an array to document character portraits
-var portraits = [//'StimImgElenaAlves.PNG', 
-                 'StimImgFernandoAlves.PNG', 'StimImgFranklinReinhardt.PNG', 'StimImgGraceFraser.PNG',
-                 'StimImgHenryFraser.PNG', 'StimImgJonathanFraser.PNG', 'StimImgMiguelAlves.PNG', 'StimImgSylviaSteinetz.PNG'];
-
-// Randomizing the order of the indices for the names and portraits
-var indices = jsPsych.randomization.sampleWithoutReplacement(Array.from({length: names.length}, (v, i) => i + 0));
-  
-// Reordering the previously noted arrays according to the new randomized order
-var names_rand = [];
-var portraits_rand = [];
-for (let i = 0; i < indices.length; i++) {
-  names_rand.push(names[indices[i]]);
-  portraits_rand.push(portraits[indices[i]]);
-}
-
-// Creating an array to portrait filepaths
-var transparent_portrait_filepaths = new Array(portraits.length).fill('components/portraits_transparent/');
-var portrait_filepaths = new Array(portraits.length).fill('components/portraits/');
+var portraits = ['components/portraits/StimImgFernandoAlves.PNG', 'components/portraits/StimImgFranklinReinhardt.PNG', 'components/portraits/StimImgGraceFraser.PNG', 'components/portraits/StimImgJonathanFraser.PNG'];
 
 // Create a variable to store the filepath to our stimulus
 var stimvid = ['components/stim/StimVid_Undoing1.mp4', 'components/stim/StimVid_Undoing2.mp4']
@@ -217,20 +194,12 @@ var background_portraits = ['components/portraits/StimImgJonathanFraser.PNG', 'c
                             'components/portraits/StimImgSylviaSteinetz.PNG', 'components/portraits/StimImgRobertAdelman.PNG', 
                             'components/portraits/StimImgJoeMendoza.PNG']
 
-// Creating an array of transparent portraits to preload
-var transp_portraits = ['components/portraits_transparent/StimImgJonathanFraser.PNG', 'components/portraits_transparent/StimImgHenryFraser.PNG', 
-                        'components/portraits_transparent/StimImgGraceFraser.PNG', 'components/portraits_transparent/StimImgFranklinReinhardt.PNG', 
-                        'components/portraits_transparent/StimImgElenaAlves.PNG',  'components/portraits_transparent/StimImgMiguelAlves.PNG', 
-                        'components/portraits_transparent/StimImgFernandoAlves.PNG', 'components/portraits_transparent/StimImgSylviaSteinetz.PNG']
-
 // Counterbalancing assessment labels
 var label_condition = jsPsych.randomization.sampleWithoutReplacement(['A', 'B'])
 if (label_condition[0] == 'A'){
-  var labels = [style_labels + '<strong>100%<br>Guilty</strong></p>', style_labels + '<strong>100%<br>Innocent</strong></p>']
-  var assessment_prompt_order = [' is guilty or innocent']
+  var labels = [style_labels + '<strong>0%<br>Informative</strong></p>', style_labels + '<strong>100%<br>Informative</strong></p>']
 } else {
-  var labels = [style_labels + '<strong>100%<br>Innocent</strong></p>', style_labels + '<strong>100%<br>Guilty</strong></p>']
-  var assessment_prompt_order = [' is innocent or guilty']
+  var labels = [style_labels + '<strong>100%<br>Informative</strong></p>', style_labels + '<strong>0%<br>Informative</strong></p>']
 }
 
 // ------ MISCELLANEOUS -----
@@ -243,16 +212,14 @@ var error_Browser = [
 var instr_ExpStart = [
     style_instr + "The experiment will now start! <br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>"
 ]
-var instr_Buffer = [
-    style_instr + "Returning to the video..."
-]
 var instr_ExpEnd = [
     style_instr + 'Please press the <strong>SPACE BAR</strong> to automatically reroute back to SONA.<br><br> You <strong>must</strong> do this to submit your study data and receive credit for participating. This may take a moment to complete.<br><br><br>Thank you for completing the study!</p>'
 ]
 
 // ------ CONTENT WARNING ------
+// NOTE: that I added a 'spoiler warning' here which I think has a two fold function: Giving warning, but also selling the deception
 var instr_Warning = [
-    style_instr + 'During this experiment, you will watch an episode of a publicly broadcasted murder mystery television show.<br><br>It contains adult themes and graphic language. While the video will portray a character accused of a violent crime, as well as verbal descriptions of the crime, <strong>violence will not be shown</strong>, nor will any other graphic visual content.<br><br><br>If you are not comfortable with continuing, please exit this experiment now.<br><br><br><br>Otherwise, please press the <strong>SPACE BAR</strong> to continue.</p>'
+    style_instr + 'During this experiment, you will watch an episode of a publicly broadcasted murder mystery television show.<br><br>It contains adult themes and graphic language. While the video will portray a character accused of a violent crime, as well as verbal descriptions of the crime, <strong>violence will not be shown</strong>, nor will any other graphic visual content.<br><br><br>To conduct this study, we must disclose aspects of the plot before they are revealed by the video (i.e., "spoilers").<br><br><br>If you are not comfortable with continuing, please exit this experiment now.<br><br><br><br>Otherwise, please press the <strong>SPACE BAR</strong> to continue.</p>'
 ]
 
 // ------ CONSENT ------
@@ -269,24 +236,18 @@ var labels_Consent = [
 // ------ INSTRUCTIONS -----
 var instr_Intro = [
     style_instr + 'Thank you for agreeing to participate in this experiment! <br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>', 
-    style_instr + 'Before we begin, please be sure that you are in a good space to complete the experiment. This space should be: <br><br><br><br> <strong>Comfortable <br><br> Distraction-free <br><br> Available for the next 60 minutes</strong> <br><br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>', 
-    style_instr + '<strong>Please give your full attention to the experiment. This includes:</strong> <br><br><br><br> Closing or minimizing other programs on your computer <br><br> Silencing your phone or placing it somewhere it will not be distracting <br><br> Testing that your audio is working and set to a comfortable volume that you can clearly hear <br><br> Not completing this experiment with others present <br><br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>', 
-    style_instr + 'You will watch 45 minutes of a crime mystery drama in which one character is suspected of having murdered another.<br><br><br>We will present background information about the characters of the show and the surrounding context before the episode begins.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>',
-    style_instr + 'The video will intermittently pause while you watch to assess how certain <strong>you</strong> are that different characters in the show are guilty or innocent of having committed the murder.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>',
-    style_instr + "These certainty assessments tend to be flexible and may shift upon hearing something that a character says or seeing something that a character does or events that occur when a character is not on screen.<br><br><br>Some of this information may influence your assessments only slightly while other information may influence your assessments a great deal.<br><br><br>When prompted, please update your rating of how certain you are of each character's innocence or guilt at that moment in time. <br><br><br> Please try to be as precise as you can.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>",
-    style_instr + "These certainty assessments will be assessed on a continuous scale. <br><br><br> The scale ranges from 100% certain that a character is guilty to 100% certain that a character is innocent.<br><br><br>Leaving the scale in the middle (i.e., 0% certain) would indicate that you are completely uncertain whether a character is innocent or guilt.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>",
-    style_instr + "After your first rating, we will mark the scale where you had last rated that character to hopefully make updating your certainty rating easier. <br><br><br>A progress bar at the top will show the order in which you will assess the characters.<br><br><br>A portrait in the center of the screen will identify which character you are assessing at that moment.<br><br><br>Let's look at an example of what this looks like.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>",    
+    style_instr + 'Before we begin, please be sure that you are in a good space to complete the experiment. This space should be: <br><br><br><br> <strong>Comfortable<br><br>Free from distarctions<br><br> Available for the next 60 minutes</strong> <br><br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>', 
+    style_instr + '<strong>To give your full attention to the experiment, please do the following:</strong> <br><br><br><br> Close or minimize other programs on your computer<br><br>Silence your phone or place it somewhere it will not be distracting<br><br>Test that your audio is working and set to a comfortable volume that you can clearly hear<br><br>Complete this experiment without others present <br><br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>', 
+    style_instr + 'You will watch 45 minutes of a crime mystery drama in which one character is suspected of having murdered another.<br><br><br>Before the episode begins, we will present background information about the characters and the surrounding context of the show, including who is guilty of committing the murder.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>',
+    style_instr + 'During the episode, we ask you to continuously report how informative each moment is in helping you understand who is guilty of committing the murder.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>',
+    style_instr + "Your assessments may change moment to moment as characters speak, act, or events unfold.<br><br><br>Some moments may slightly influence your judgment, while others may strongly shape your understanding.<br><br><br>Please update your ratings to reflect how informative each moment feels in determining who is guilty of the murder. <br><br><br>Please try to be as precise as you can by updating your ratings whenever your feelings change.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>",
+    style_instr + "Your ratings will be captured on a continuous scale. <br><br><br> The scale ranges from 00% informative - suggesting that this moment is irrelevant to understanding who is guilty of murder - to 100% informative - suggesting that this moment is extremely relevant to understanding who is guilty.<br><br><br><br>Please press the <strong>SPACE BAR</strong> to continue</p>",
+    style_instr + "Again, you should continuously assess the episode and update your ratings to reflect the moment's informational relevance.<br><br><br>Let's look at an example of what this looks like.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>",    
 ]
 
 // ------ PRACTICE RATING ------
 var instr_Practice = [ 
-    style_practice + 'You can move the slider left or right to indicate your rating. The current value of your rating will visualize above the scale and update as your move the slider. Press the button below the slider to submit your rating. <strong>Move the slider to indicate being 50% certain of innocence to start.</strong>' 
-]
-var instr_PracticeSuccess = [ 
-    style_instr + 'Great! If you have any questions that you must have answered before continuing, please contact study staff via the recruitment platform.<br><br><br>If you are ready to start, we will present the background information.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>' 
-]
-var instr_PracticeFailure = [ 
-    style_practice + 'It appears that an error occurred and you <strong>did not</strong> enter the correct slider value.<br><br>Try again to indicate <strong>being 50% certain of innocence</strong> before we continue!' 
+    style_practice + 'You can move the slider left by pressing "1" or right by pressing "2" to indicate your rating. The current value of your rating will visualize above the scale and update as your move the slider. We will record the slider position moment by moment to understand how you felt throughout the video.<br><br>Try moving the slider around to practice using it.' 
 ]
 
 // ------ BACKSTORY -----
@@ -302,15 +263,6 @@ backstory = [
 
 // ------ PRIMARY TASKS ------
 
-var assessment_prompt_beginning = [
-    'How certain are you that '
-]
-var assessment_prompt_end = [
-    "<br>of Elena Alves's death (i.e., that they had killed her)?<br>"
-]
-var marker_label = [
-    'Your Previous Rating <br> For This Character Was:'
-]
 var instr_IndDiff = [
     style_instr +'You have just completed our video task! Thank you for your continued effort and attention. <br><br> In our final task, we will ask you questions about yourself. Please read the instructions before each series of questions and answer the questions honestly to the best of your abilities.<br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>'
 ]
@@ -386,7 +338,7 @@ var consent_preload = {
 // Preloading our background portraits
 var portraits_preload = {
   type: jsPsychPreload,
-  images: [background_portraits, transp_portraits],
+  images: [background_portraits],
   message: 'Please wait while the experiment loads. This may take a few minutes.',
   data: {task: 'Preload'},
   on_finish: function(data) {
@@ -396,6 +348,18 @@ var portraits_preload = {
 };
 
 // Preloading our video stimuli
+var videopractice_preload = {
+  type: jsPsychPreload,
+  video: ['components/stim/sample_video.mp4'],
+  message: 'Please wait while the video loads. This may take a few minutes.',
+  show_progress_bar: false,
+  max_load_time: 600000, 
+  data: {task: 'Preload'},
+  on_finish: function(data) {
+    // Getting current time
+    time_stamp(data)
+  }
+};
 var video1_preload = {
   type: jsPsychPreload,
   video: [stimvid[0]],
@@ -516,19 +480,6 @@ var instr_ExpStartDisplay = {
     time_stamp(data)
   }
 };
-
-// Creating a buffer function to reduce the likelihood that users double tap the assessment button
-var buffer = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: instr_Buffer,
-  choices: "NO_KEYS",
-  trial_duration: 1000,
-  response_ends_trial: false,
-  on_finish: function(data) {
-    // Getting current time
-    time_stamp(data)
-  }
-}
 
 // Instructions for individual difference measures
 var instr_IndDiffDisplay = {
@@ -782,121 +733,27 @@ for (var i = 0; i < instr_Intro.length; i++) {
 // Adding portraits
 timeline.push(portraits_preload)
 
-// | - - - - - Practice - - - - - - |
-// Create a temporary filepath array
-var temp_filepaths = transparent_portrait_filepaths;
-temp_filepaths[0] = 'components/portraits/';
-let progress_bar = temp_filepaths.map((item, index) => item + portraits_rand[index]);
-if (k == portraits_rand.length - 1){
-  temp_filepaths[0] = 'components/portraits_transparent/';
-}
+// | - - - - - Sample Video - - - - - - - |
 
-// Defining the success condition to move past the practice session
-if (label_condition[0] == 'A') {
-  var SuccessCondition = 50 
-} else {
-  var SuccessCondition = -50
-}
-var PracticeComplete = false
-
-// Assessing how certain subjects are of each character's guilt or innocence
-var Practice = {
-  type: jsPsychImageSliderResponseModified,
-  stimulus: 'components/portraits/' + portraits_rand[0],
-  stimulus_height: img_size,
-  stimulus_width: img_size,
-  top_images: progress_bar,
-  min: minimum,
-  max: maximum,
-  slider_start: start,
-  slider_width: slider_width,
-  value_unit: "% Certain",
-  labels: labels,
-  prompt: instr_Practice,
-  data: {
-    task: 'Practice',
-    character: names_rand[0],
-    label_condition: label_condition[0],
-  },
-  on_finish: function(data) {
-    if (data.response == SuccessCondition) {
-      PracticeComplete = true
+ // Run the continuous rating task
+ var continuous_rating = {
+    type: jsPsychVideoRatingContinuous,
+    stimulus: ['components/stim/sample_video.mp4'],
+    prompt: instr_Practice,
+    width: width,
+    height: height,
+    min: minimum,
+    max: maximum,
+    labels: labels,
+    slider_start: slider_start,
+    slider_width: slider_width,
+    units: "% Informative",
+    data: {task: 'Rating'},
+    on_finish: function(data) {
+      time_stamp(data)
     }
-    // Getting current time
-    time_stamp(data)
-  }
-};
+  };
 
-// Have them repeat the practice task
-var PracticeFailure = {
-  type: jsPsychImageSliderResponseModified,
-  stimulus: 'components/portraits/' + portraits_rand[0],
-  stimulus_height: img_size,
-  stimulus_width: img_size,
-  top_images: progress_bar,
-  min: minimum,
-  max: maximum,
-  slider_start: start,
-  slider_width: slider_width,
-  value_unit: "% Certain",
-  labels: labels,
-  prompt: instr_PracticeFailure,
-  data: {
-    task: 'PracticeFailure',
-    character: names_rand[0],
-    label_condition: label_condition[0]
-  },
-  on_finish: function(data) {
-    if (data.response == SuccessCondition) {
-      PracticeComplete = true
-    }
-    // Getting current time
-    time_stamp(data)
-  }
-};
-
-// If the success condition hasn't been met yet, 
-var Practice_Loop = {
-  timeline: [PracticeFailure],
-  loop_function: function(){
-    if (PracticeComplete){
-      return false;
-    } else {
-      return true;
-    }
-  }
-};
-
-// If the success condition hasn't been met, start the practice loop
-// If  it has, skip the practice loop
-var Practice_Condition = {
-  timeline: [Practice_Loop],
-  conditional_function: function(){  
-    if (PracticeComplete == true) { 
-      return false;
-    } else {
-      return true;
-    }
-  }
-};
-
-// Present instructions to move on 
-var PracticeSuccess = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: instr_PracticeSuccess,
-  choices: [' '],
-  data: { task: 'PracticeSuccess' },
-  on_finish: function(data) {
-    // Getting current time
-    time_stamp(data)
-  }
-};
-
-// Present the practice events
-timeline.push(Practice)
-timeline.push(Practice_Condition)
-timeline.push(PracticeSuccess)
-  
 // | - - - - - Background Information - - - - - - -| 
 
   // Iterating through our sequentially-ordered array of background information
@@ -943,6 +800,26 @@ timeline.push(PracticeSuccess)
     timeline.push(Background);
   }
 
+// | - - - - - Condition Assignment - - - - - |
+var reveal = {
+  type: jsPsychImageKeyboardResponseModified,
+  stimulus_height: img_size,
+  stimulus_width: img_size,
+  render_on_canvas: false,
+  choices: ['Y', 'y'],
+  data: {task: 'Reveal'},
+  on_start: function(task) {
+    task.stimulus = portraits[cond]; 
+    task.stimulus_caption = [[style_background + names[cond] + '</p>']];
+    task.prompt = [style_question + '<strong>' + names[cond] +" is guilty of having murdered Elena Alves</strong>.<br><br><br>Please rate how informative each moment is towards your understand that " + names[cond] + " is guilty.<br><br><br><br> Please press the <strong>Y Key</strong> to confirm that you understand and to continue</p>"]
+  },
+  on_finish: function(data) {
+    // Getting current time
+    time_stamp(data)
+  }
+};
+  timeline.push(reveal)
+
 // | - - - - - Primary Task Trials - - - - - -|
 
 // Giving practice instructions
@@ -951,391 +828,31 @@ timeline.push(instr_ExpStartDisplay);
 // Preloading video stimuli
 timeline.push(video1_preload);
 
-// Iterating through our randomly-ordered array of video stimuli
-for (var i = 0; i < breaks.length; i++) {
+// Again checking the browser dimensions before the video plays again to make sure that the participant can see everything
+timeline.push(browser_check);
 
-  // Again checking the browser dimensions before the video plays again to make sure that the participant can see everything
-  timeline.push(browser_check);
+// Iterating through our sequentially-ordered array of stimuli
+for (var i = 0; i < stimvid.length; i++) {
 
-  // Checking if this is the first trial
-  if (i == 0){
-
-    // Having participants watch the clip while attempting to self-regulate
-    var video = {
-      type: jsPsychVideoKeyboardResponse,
-      stimulus: [stimvid[0]],
-      choices: 'NO_KEYS',
-      start: 0, 
-      stop: breaks[i],
-      trial_ends_after_video: true,
-      width: width,
-      height: height,
-      autoplay: true,
-      on_finish: function(data) {
-        time_stamp(data)
-      },
-      data: {task: 'video 0',
-      }
-    };
-    timeline.push(video);
-
-    // Iterate through all of the different portraits
-    for (var k = 0; k < portraits_rand.length; k++) {
-
-      // Create a temporary filepath array
-      var temp_filepaths = transparent_portrait_filepaths;
-      temp_filepaths[k] = 'components/portraits/';
-      if (k > 0){
-        temp_filepaths[k-1] = 'components/portraits_transparent/';
-      }
-      let progress_bar = temp_filepaths.map((item, index) => item + portraits_rand[index]);
-      if (k == portraits_rand.length - 1){
-        temp_filepaths[k] = 'components/portraits_transparent/';
-      }
-
-      // Assessing how certain subjects are of each character's guilt or innocence
-      var assessment = {
-        type: jsPsychImageSliderResponseModified,
-        stimulus: 'components/portraits/'+ portraits_rand[k],
-        stimulus_height: img_size,
-        stimulus_width:img_size,
-        top_images: progress_bar,
-        min: minimum,
-        max: maximum,
-        slider_start: start, 
-        slider_width: slider_width,
-        value_unit: "% Certain",
-        button_label: "<strong>Continue</strong><br>(Only Press Once!)",
-        labels: labels,
-        prompt: [style_assess_prompt + assessment_prompt_beginning  + "<strong>" + names_rand[k] + "</strong>" + assessment_prompt_order + assessment_prompt_end + '</p>'],
-        data: {task: 'assessment ' + [k],
-              character: names_rand[k],
-              label_condition: label_condition[0]
-        },
-        on_finish: function(data) {
-          // Getting current time
-          time_stamp(data)
-        }
-      };
-      timeline.push(assessment);
-    };
-  
-    // Adding the buffer function to hopefully make the assessments transition quicker and reduce the possibility of pressing the button more than once
-    timeline.push(buffer)
-  };
-
-  // If this is not the first trial
-  if (i > 0){
-
-      // If the breaks for this iteration are before the first video ends
-      if (breaks[i] <= 1337){
-
-        // Having participants watch the clip while attempting to self-regulate
-        var video = {
-          type: jsPsychVideoKeyboardResponse,
-          stimulus: [stimvid[0]],
-          choices: 'NO_KEYS',
-          width: width,
-          height: height,
-          start: (breaks[i - 1] - 5),
-          stop: breaks[i],
-          autoplay: true,
-          controls: false,
-          trial_ends_after_video: true,
-          data: {
-            task: 'video ' + [i]
-          },
-          on_finish: function(data) {
-            // Getting current time
-            time_stamp(data)
-          }
-        };
-        timeline.push(video);
-
-        // Iterate through all of the different portraits
-        for (var k = 0; k < portraits_rand.length; k++) {
-
-          // Create a temporary filepath array
-          var temp_filepaths = transparent_portrait_filepaths;
-          temp_filepaths[k] = 'components/portraits/';
-          if (k > 0){
-            temp_filepaths[k-1] = 'components/portraits_transparent/';
-          }
-          let progress_bar = temp_filepaths.map((item, index) => item + portraits_rand[index]);
-          if (k == portraits_rand.length - 1){
-            temp_filepaths[k] = 'components/portraits_transparent/';
-          }
-
-          // Assessing how certain subjects are of each character's guilt or innocence
-          var assessment = {
-            type: jsPsychImageSliderResponseModified,
-            stimulus: 'components/portraits/'+ portraits_rand[k],
-            stimulus_height: img_size,
-            stimulus_width: img_size,
-            top_images: progress_bar,
-            min: minimum,
-            max: maximum,
-            slider_width: slider_width,
-            value_unit: "% Certain",
-            button_label: "<strong>Continue</strong><br>(Only Press Once!)",
-            labels: labels,
-            marker_color: '#FF0000',
-            marker_label: marker_label,
-            prompt: [style_assess_prompt + assessment_prompt_beginning + "<strong>" + names_rand[k] + "</strong>" + assessment_prompt_order + assessment_prompt_end + '</p>'],
-            data: {task: 'assessment ' + [k],
-                  character: names_rand[k],
-                  label_condition: label_condition[0]
-            },
-            on_start: function(trial) {
-              trial.slider_start = jsPsych.data.get().last(portraits_rand.length + 3).values()[0].response
-              trial.marker = jsPsych.data.get().last(portraits_rand.length + 3).values()[0].response
-              trial.marker_label = style_marker_label + marker_label + '<br><strong>' + Math.abs(trial.marker) + "</strong>" + trial.value_unit + "</p></div>"
-            },
-            on_finish: function(data) {
-              // Getting current time
-              time_stamp(data)
-            }
-          };
-          timeline.push(assessment)
-        };  
-        
-        // Adding the buffer function to hopefully make the assessments transition quicker and reduce the possibility of pressing the button more than once
-        timeline.push(buffer)          
-      };
-      
-      // If the breaks for this iteration are after the first video ends
-      if (breaks[i] > 1337){
-
-        if (second_stim_loaded == false){
-
-          // Preloading video stimuli
-          timeline.push(video2_preload);
-
-          // Change the value of the variable so it doesn't repeat
-          var second_stim_loaded = true
-
-          // Increment a tracker variable
-          var preload_index_bump = 1
-
-        } else {
-
-          var preload_index_bump = 0
-
-        }
-
-      // If the previous break was before the end of the first video
-      if (breaks[i-1] <= (1337 + 4)){
-
-        // Defining the new breaking point for the second video
-        new_break = breaks[i] - 1337
-        
-        // Having participants watch the clip while attempting to self-regulate
-        var video = {
-          type: jsPsychVideoKeyboardResponse,
-          stimulus: [stimvid[0]],
-          choices: 'NO_KEYS',
-          width: width,
-          height: height,
-          start: (breaks[i - 1] - 5),
-          autoplay: true,
-          controls: false,
-          trial_ends_after_video: true,
-          data: {
-            task: 'video ' + [i]
-          },
-          on_finish: function(data) {
-            // Getting current time
-            time_stamp(data)
-          }
-        };
-        timeline.push(video);
-
-        // Having participants watch the clip while attempting to self-regulate
-        var video = {
-          type: jsPsychVideoKeyboardResponse,
-          stimulus: [stimvid[1]],
-          choices: 'NO_KEYS',
-          width: width,
-          height: height,
-          start: 0,
-          stop: new_break,
-          autoplay: true,
-          controls: false,
-          trial_ends_after_video: true,
-          data: {
-            task: 'video ' + [i + 1]
-          },
-          on_finish: function(data) {
-            // Getting current time
-            time_stamp(data)
-          }
-        };
-        timeline.push(video);
-
-        // Iterate through all of the different portraits
-        for (var k = 0; k < portraits_rand.length; k++) {
-
-          // Create a temporary filepath array
-          var temp_filepaths = transparent_portrait_filepaths;
-          temp_filepaths[k] = 'components/portraits/';
-          if (k > 0){
-            temp_filepaths[k-1] = 'components/portraits_transparent/';
-          }
-          let progress_bar = temp_filepaths.map((item, index) => item + portraits_rand[index]);
-          if (k == portraits_rand.length - 1){
-            temp_filepaths[k] = 'components/portraits_transparent/';
-          }
-
-          // Assessing how certain subjects are of each character's guilt or innocence
-          var assessment = {
-            type: jsPsychImageSliderResponseModified,
-            stimulus: 'components/portraits/'+ portraits_rand[k],
-            stimulus_height: img_size,
-            stimulus_width: img_size,
-            top_images: progress_bar,
-            min: minimum,
-            max: maximum,
-            slider_width: slider_width,
-            value_unit: "% Certain",
-            button_label: "<strong>Continue</strong><br>(Only Press Once!)",
-            labels: labels,
-            marker_color: '#FF0000',
-            marker_label: marker_label,
-            prompt: [style_assess_prompt + assessment_prompt_beginning + "<strong>" + names_rand[k] + "</strong>" + assessment_prompt_order + assessment_prompt_end + '</p>'],
-            data: {task: 'assessment ' + [k],
-                  character: names_rand[k],
-                  label_condition: label_condition[0]
-            },
-            on_start: function(trial) {
-              trial.slider_start = jsPsych.data.get().last(portraits_rand.length + 5 + preload_index_bump).values()[0].response
-              trial.marker = jsPsych.data.get().last(portraits_rand.length + 5 + preload_index_bump).values()[0].response
-              trial.marker_label = style_marker_label + marker_label + '<br><strong>' + Math.abs(trial.marker) + "</strong>" + trial.value_unit + "</p></div>"
-            },            
-            on_finish: function(data) {
-              // Getting current time
-              time_stamp(data)
-            }
-          };
-
-          timeline.push(assessment)
-        };            
-      
-        // Adding the buffer function to hopefully make the assessments transition quicker and reduce the possibility of pressing the button more than once
-        timeline.push(buffer)
-      }
-      
-      // If the previous break was after the end of the first video
-      if (breaks[i-1] > (1337 + 4)){
-        
-        // Defining the new breaking point for the second video
-        new_break = breaks[i] - 1337
-        new_start = breaks[i-1] - 5 - 1337
-
-        // Having participants watch the clip while attempting to self-regulate
-        var video = {
-          type: jsPsychVideoKeyboardResponse,
-          stimulus: [stimvid[1]],
-          choices: 'NO_KEYS',
-          width: width,
-          height: height,
-          start: new_start,
-          stop: new_break,
-          autoplay: true,
-          controls: false,
-          trial_ends_after_video: true,
-          data: {
-            task: 'video' + [i]
-          },
-          on_finish: function(data) {
-              // Getting current time
-              time_stamp(data)
-          }
-        };
-        timeline.push(video);
-
-        // Iterate through all of the different portraits
-        for (var k = 0; k < portraits_rand.length; k++) {
-
-          // Create a temporary filepath array
-          var temp_filepaths = transparent_portrait_filepaths;
-          temp_filepaths[k] = 'components/portraits/';
-          if (k > 0){
-            temp_filepaths[k-1] = 'components/portraits_transparent/';
-          }
-          let progress_bar = temp_filepaths.map((item, index) => item + portraits_rand[index]);
-          if (k == portraits_rand.length - 1){
-            temp_filepaths[k] = 'components/portraits_transparent/';
-          }
-
-          // Assessing how certain subjects are of each character's guilt or innocence
-          var assessment = {
-            type: jsPsychImageSliderResponseModified,
-            stimulus: 'components/portraits/'+ portraits_rand[k],
-            stimulus_height: img_size,
-            stimulus_width: img_size,
-            top_images: progress_bar,
-            min: minimum,
-            max: maximum, 
-            slider_width: slider_width,
-            value_unit: "% Certain",
-            button_label: "<strong>Continue</strong><br>(Only Press Once!)",
-            labels: labels,
-            marker_color: '#FF0000',
-            marker_label: marker_label,
-            prompt: [style_assess_prompt + assessment_prompt_beginning + "<strong>" + names_rand[k] + "</strong>" + assessment_prompt_order + assessment_prompt_end + '</p>'],
-            data: {task: 'assessment ' + [k],
-                  character: names_rand[k],
-                  label_condition: label_condition[0]
-            },
-            on_start: function(trial) {
-              trial.slider_start = jsPsych.data.get().last(portraits_rand.length + 3 + preload_index_bump).values()[0].response
-              trial.marker = jsPsych.data.get().last(portraits_rand.length + 3 + preload_index_bump).values()[0].response
-              trial.marker_label = style_marker_label + marker_label + '<br><strong>' + Math.abs(trial.marker) + "</strong>" + trial.value_unit + "</p></div>"
-            },
-            on_finish: function(data) {
-              // Getting current time
-              time_stamp(data)
-            }
-          };
-          timeline.push(assessment)
-        };            
-      
-        // Adding the buffer function to hopefully make the assessments transition quicker and reduce the possibility of pressing the button more than once
-        timeline.push(buffer)
-      }
-    };
-    };
-
-  // if the final iteration doesn't break at the end of the video
-  if (i == (breaks.length - 1)){
-
-    // Defining the new breaking point for the second video
-    new_break = breaks[i] - 1337
-    if (new_break != 1337) {
-      
-      // Having participants watch the clip while attempting to self-regulate
-      var video = {
-        type: jsPsychVideoKeyboardResponse,
-        stimulus: [stimvid[1]],
-        choices: 'NO_KEYS',
-        width: width,
-        height: height,
-        start: (breaks[i] - 5),
-        autoplay: true,
-        controls: false,
-        trial_ends_after_video: true,
-        data: {
-          task: 'video ' + [i]
-        },
-        on_finish: function(data) {
-              // Getting current time
-              time_stamp(data)
-            }
-      };
-      timeline.push(video);
+  // Having participants watch the clip while attempting to self-regulate
+  var video = {
+    type: jsPsychVideoKeyboardResponse,
+    stimulus: [stimvid[0]],
+    choices: 'NO_KEYS',
+    start: 0, 
+    stop: breaks[i],
+    trial_ends_after_video: true,
+    width: width,
+    height: height,
+    autoplay: true,
+    on_finish: function(data) {
+      time_stamp(data)
+    },
+    data: {task: 'video 0',
     }
-  }
-};
+  };
+  timeline.push(video);
+}
 
 // | - - - - - Individual Difference Measures - - - - - -|
 
