@@ -30,7 +30,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script> 
     
-    const dev = false   // Whether this is in development; if false, the study is live
+    const dev = true   // Whether this is in development; if false, the study is live
     const pav = true    // Whether this study is being run on Pavlovia; if false, it is being run locally
     const sona = true   // Whether this study is being run on SONA; if false, it is being run on prolific
 
@@ -96,7 +96,7 @@ var jsPsych = initJsPsych({
   on_finish: function() {
 
     if (sona){
-      window.location = [ADD SONA URL HERE] + subject_id
+      window.location = ['ADD SONA URL HERE'] + subject_id
     } else {
       window.location = ""
     }
@@ -111,12 +111,12 @@ var jsPsych = initJsPsych({
 if (sona){
   jsPsych.data.addProperties({
     subject_id: subject_id,
-    break_id: break_id
+    cond: cond
   });
 } else {
   jsPsych.data.addProperties({
     subject_id: subject_id,
-    break_id: break_id
+    cond: cond
   });
 }
 
@@ -126,8 +126,6 @@ const height = 700;
 const img_size = 300;
 
 // Assigning scale values
-var minimum = 0
-var maximum = 100
 var start = 0
 var slider_width = 700
 
@@ -198,8 +196,12 @@ var background_portraits = ['components/portraits/StimImgJonathanFraser.PNG', 'c
 var label_condition = jsPsych.randomization.sampleWithoutReplacement(['A', 'B'])
 if (label_condition[0] == 'A'){
   var labels = [style_labels + '<strong>0%<br>Informative</strong></p>', style_labels + '<strong>100%<br>Informative</strong></p>']
+  var minimum = 0
+  var maximum = 100
 } else {
   var labels = [style_labels + '<strong>100%<br>Informative</strong></p>', style_labels + '<strong>0%<br>Informative</strong></p>']
+  var minimum = -100
+  var maximum = 0
 }
 
 // ------ MISCELLANEOUS -----
@@ -220,6 +222,12 @@ var instr_ExpEnd = [
 // NOTE: that I added a 'spoiler warning' here which I think has a two fold function: Giving warning, but also selling the deception
 var instr_Warning = [
     style_instr + 'During this experiment, you will watch an episode of a publicly broadcasted murder mystery television show.<br><br>It contains adult themes and graphic language. While the video will portray a character accused of a violent crime, as well as verbal descriptions of the crime, <strong>violence will not be shown</strong>, nor will any other graphic visual content.<br><br><br>To conduct this study, we must disclose aspects of the plot before they are revealed by the video (i.e., "spoilers").<br><br><br>If you are not comfortable with continuing, please exit this experiment now.<br><br><br><br>Otherwise, please press the <strong>SPACE BAR</strong> to continue.</p>'
+]
+var instr_Disclosure = [
+  style_instr + '<strong>DISCLOSURE STATEMENT</strong>:<br><br> Thank you for participating in our study on how individuals interpret and evaluate information in narrative contexts. To help us achieve the goals of this research, we employed a minor form of deception. Specifically, during the study, you were informed that a specific character committed the murder of Elena Alves. However, this information may not accurately reflect the events of the show.<br><br><br><br>Please press the <strong>SPACE BAR</strong> to continue.</p>',
+  style_instr + '<strong>DISCLOSURE STATEMENT</strong>:<br><br>We used this approach to encourage you to view and interpret the storyline as if you were adopting the perspective of others who had watched the episode and come to that conclusion. This helps us better understand how viewers evaluate the relevance of different pieces of information when forming interpretations or making judgments about a narrative.<br><br><br><br>Please press the <strong>SPACE BAR</strong> to continue.</p>',
+  style_instr + '<strong>DISCLOSURE STATEMENT</strong>:<br><br>We want to emphasize that this deception was necessary to preserve the integrity of the study and simulate a naturalistic viewing experience. Please be assured that all aspects of this research were reviewed and approved by the Temple Univeristy Institutional Review Board, ensuring adherence to ethical standards.<br><br><br><br>Please press the <strong>SPACE BAR</strong> to continue.</p>',
+  style_instr + '<strong>DISCLOSURE STATEMENT</strong>:<br><br>If you have any questions about the study, or if you would like to discuss your participation further, please feel free to contact William Mitchell at billy.mitchell@temple.edu.Thank you again for your participation!<br><br><br><br>Please press the <strong>SPACE BAR</strong> to continue.</p>',
 ]
 
 // ------ CONSENT ------
@@ -744,8 +752,9 @@ timeline.push(portraits_preload)
     height: height,
     min: minimum,
     max: maximum,
+    abs_value: true,
     labels: labels,
-    slider_start: slider_start,
+    slider_start: start,
     slider_width: slider_width,
     units: "% Informative",
     data: {task: 'Rating'},
@@ -834,21 +843,21 @@ timeline.push(browser_check);
 // Iterating through our sequentially-ordered array of stimuli
 for (var i = 0; i < stimvid.length; i++) {
 
-  // Having participants watch the clip while attempting to self-regulate
   var video = {
-    type: jsPsychVideoKeyboardResponse,
+    type: jsPsychVideoRatingContinuous,
     stimulus: [stimvid[0]],
-    choices: 'NO_KEYS',
-    start: 0, 
-    stop: breaks[i],
-    trial_ends_after_video: true,
     width: width,
     height: height,
-    autoplay: true,
+    min: minimum,
+    max: maximum,
+    abs_value: true,
+    labels: labels,
+    slider_start: start,
+    slider_width: slider_width,
+    units: "% Informative",
+    data: {task: 'Rating'},
     on_finish: function(data) {
       time_stamp(data)
-    },
-    data: {task: 'video 0',
     }
   };
   timeline.push(video);
@@ -881,6 +890,20 @@ for (var i = 0; i < stimvid.length; i++) {
 
 
 // | - - - - - Exiting - - - - - -|
+// Iterating through our sequentially-ordered array of initial instructions
+for (var i = 0; i < instr_Disclosure.length; i++) {
+  var instr_DisclosureDisplay = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: instr_Disclosure[i],
+    choices: [' '],
+    data: {task: 'Instr_Disclosure'},
+    on_finish: function(data) {
+      // Getting current time
+      time_stamp(data)
+    }
+  };
+  timeline.push(instr_DisclosureDisplay);
+}
 
 // Closing the experiment
 timeline.push(trial_after_fullscreen);
