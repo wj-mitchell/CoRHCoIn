@@ -18,9 +18,7 @@
   <script src="jspsych_v7.0/dist/plugin-survey-multi-choice.js"></script>   
   <script src="jspsych_v7.0/dist/plugin-survey-likert.js"></script>
   <script src="jspsych_v7.0/dist/plugin-html-button-response.js"></script>
-  <script src="jspsych_v7.0/dist/plugin-html-button-response.js"></script>
   <script src="jspsych_v7.0/dist/plugin-image-button-response-modified.js"></script>
-  <script src="jspsych_v7.0/dist/plugin-html-slider-response.js"></script>
   <script src="jspsych_v7.0/dist/plugin-image-keyboard-response-modified.js"></script>
   <script src="jspsych_v7.0/dist/plugin-html-keyboard-response.js"></script>
   <script src="jspsych_v7.0/dist/plugin-video-rating-continuous.js"></script>
@@ -31,7 +29,7 @@
   <script> 
     
     const dev = true   // Whether this is in development; if false, the study is live
-    const pav = true    // Whether this study is being run on Pavlovia; if false, it is being run locally
+    const pav = false    // Whether this study is being run on Pavlovia; if false, it is being run locally
     const sona = true   // Whether this study is being run on SONA; if false, it is being run on prolific
 
     // Records a timestamp of when something occurred
@@ -129,21 +127,15 @@ const img_size = 300;
 var start = 0
 var slider_width = 700
 
-// Creating a variable to track when to preload the second half video
-var second_stim_loaded = false
-
 // ----- FORMATTING -----
 const style_strat_labels = '<font size="+7"><p>'
 const style_instr = '<p style="font-size: 36px; width: 1200px; line-height: 40px;">'
 const style_background = '<p style="font-size: 34px;">'
 const style_role = '<p style="font-size: 24px; margin-top: -30px;"><strong>'
 const style_practice = '<p style="font-size: 30px; width: 1200px; line-height: 34px; margin-top: -60px;">'
-const style_instr_nowidth = '<p style="font-size: 36px; line-height: 40px;">'
 const style_question = '<div style="width:1000px;"><p style="font-size: 30px; line-height: 34px;">'
 const style_likert = '<div style="width:1200px;"><p style="font-size: 30px; line-height: 34px;">'
 const style_labels = '<p style="line-height: 1.2; margin-top: -75px; font-size: 20px;">';
-const style_assess_prompt = '<p style="line-height: 1.2; margin-top: -15px;">';
-const style_marker_label = '<div><p style="line-height: 1.2; margin-top: 0px;">';
 const size_scale_labels = '<p style="font-size: 17px; line-height: 19px;">'
 const size_scale_questions = "<p style='font-size: 22px; line-height: 24px;'>"
 const style_response_labels = '<p style="font-size: 26px; line-height: 30px;">'
@@ -195,11 +187,11 @@ var background_portraits = ['components/portraits/StimImgJonathanFraser.PNG', 'c
 // Counterbalancing assessment labels
 var label_condition = jsPsych.randomization.sampleWithoutReplacement(['A', 'B'])
 if (label_condition[0] == 'A'){
-  var labels = [style_labels + '<strong>0%<br>Informative</strong></p>', style_labels + '<strong>100%<br>Informative</strong></p>']
+  var labels = [style_labels + '<strong>00%<br>Informative</strong></p>', style_labels + '<strong>100%<br>Informative</strong></p>']
   var minimum = 0
   var maximum = 100
 } else {
-  var labels = [style_labels + '<strong>100%<br>Informative</strong></p>', style_labels + '<strong>0%<br>Informative</strong></p>']
+  var labels = [style_labels + '<strong>100%<br>Informative</strong></p>', style_labels + '<strong>00%<br>Informative</strong></p>']
   var minimum = -100
   var maximum = 0
 }
@@ -309,26 +301,6 @@ if (pav){
       time_stamp(data)
     }
 	};
-}
-
-// Asking for a subject ID if running locally
-if (pav == false){
-  var PID = {
-    type: jsPsychSurveyHtmlForm,
-    preamble: 'Subject ID:',
-    html: '<p><input type="text" id="test-resp-box" name="PID" size="24" /></p>',
-    autofocus: 'test-resp-box',
-    data: {task: 'PID Entry'},
-    on_finish: function(data) {
-      var responses = data.response;
-      subject_id = responses.PID;
-      jsPsych.data.addProperties({
-        subject_id: subject_id,
-      });
-      // Getting current time
-      time_stamp(data)
-    }
-  };
 }
 
 // Preloading our consent stimuli
@@ -717,8 +689,6 @@ timeline.push(instr_WarningDisplay);
 if (pav) {
   timeline.push(consent_preload);
   timeline.push(consent);
-} else {
-  // timeline.push(PID)
 }
 
 // | - - - - - Instructions - - - - - -|
@@ -737,9 +707,6 @@ for (var i = 0; i < instr_Intro.length; i++) {
   };
   timeline.push(instr_IntroDisplay);
 }
-
-// Adding portraits
-timeline.push(portraits_preload)
 
 // | - - - - - Sample Video - - - - - - - |
 
@@ -762,6 +729,9 @@ timeline.push(portraits_preload)
       time_stamp(data)
     }
   };
+
+// Adding portraits
+timeline.push(portraits_preload)
 
 // | - - - - - Background Information - - - - - - -| 
 
@@ -834,15 +804,19 @@ var reveal = {
 // Giving practice instructions
 timeline.push(instr_ExpStartDisplay);
 
-// Preloading video stimuli
-timeline.push(video1_preload);
-
 // Again checking the browser dimensions before the video plays again to make sure that the participant can see everything
 timeline.push(browser_check);
 
 // Iterating through our sequentially-ordered array of stimuli
 for (var i = 0; i < stimvid.length; i++) {
 
+  // Preloading video stimuli
+  if (i == 0) {
+    timeline.push(video1_preload);
+  } else {
+    timeline.push(video2_preload);
+  }
+ 
   var video = {
     type: jsPsychVideoRatingContinuous,
     stimulus: [stimvid[0]],
