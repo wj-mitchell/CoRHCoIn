@@ -28,8 +28,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script> 
     
-    const dev = true   // Whether this is in development; if false, the study is live
-    const pav = false    // Whether this study is being run on Pavlovia; if false, it is being run locally
+    const dev = false   // Whether this is in development; if false, the study is live
+    const pav = true    // Whether this study is being run on Pavlovia; if false, it is being run locally
     const sona = true   // Whether this study is being run on SONA; if false, it is being run on prolific
 
     // Records a timestamp of when something occurred
@@ -94,7 +94,7 @@ var jsPsych = initJsPsych({
   on_finish: function() {
 
     if (sona){
-      window.location = ['ADD SONA URL HERE'] + subject_id
+      window.location = ['https://temple.sona-systems.com/webstudy_credit.aspx?experiment_id=1103&credit_token=d6143af075c4498d86cb0d2fc6d0e69b&survey_code='] + subject_id
     } else {
       window.location = ""
     }
