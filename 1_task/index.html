@@ -67,7 +67,7 @@
         subject_id = params.get('PROLIFIC_PID');
       }
     } else {
-      cond = 0
+      cond = 1
       subject_id = '99999'
     }
     
@@ -132,7 +132,7 @@ const style_strat_labels = '<font size="+7"><p>'
 const style_instr = '<p style="font-size: 36px; width: 1200px; line-height: 40px;">'
 const style_background = '<p style="font-size: 34px;">'
 const style_role = '<p style="font-size: 24px; margin-top: -30px;"><strong>'
-const style_practice = '<p style="font-size: 30px; width: 1200px; line-height: 34px; margin-top: -60px;">'
+const style_practice = '<p style="font-size: 18px; width: 1250px; line-height: 21px; margin-top: -60px;">'
 const style_question = '<div style="width:1000px;"><p style="font-size: 30px; line-height: 34px;">'
 const style_likert = '<div style="width:1200px;"><p style="font-size: 30px; line-height: 34px;">'
 const style_labels = '<p style="line-height: 1.2; margin-top: -75px; font-size: 20px;">';
@@ -187,11 +187,11 @@ var background_portraits = ['components/portraits/StimImgJonathanFraser.PNG', 'c
 // Counterbalancing assessment labels
 var label_condition = jsPsych.randomization.sampleWithoutReplacement(['A', 'B'])
 if (label_condition[0] == 'A'){
-  var labels = [style_labels + '<strong>00%<br>Informative</strong></p>', style_labels + '<strong>100%<br>Informative</strong></p>']
+  var labels = [style_labels + '<br><br><strong>00%<br>Informative</strong></p>', style_labels + '<br><br><strong>100%<br>Informative</strong></p>']
   var minimum = 0
   var maximum = 100
 } else {
-  var labels = [style_labels + '<strong>100%<br>Informative</strong></p>', style_labels + '<strong>00%<br>Informative</strong></p>']
+  var labels = [style_labels + '<br><br><strong>100%<br>Informative</strong></p>', style_labels + '<br><br><strong>00%<br>Informative</strong></p>']
   var minimum = -100
   var maximum = 0
 }
@@ -247,7 +247,7 @@ var instr_Intro = [
 
 // ------ PRACTICE RATING ------
 var instr_Practice = [ 
-    style_practice + 'You can move the slider left by pressing "1" or right by pressing "2" to indicate your rating. The current value of your rating will visualize above the scale and update as your move the slider. We will record the slider position moment by moment to understand how you felt throughout the video.<br><br>Try moving the slider around to practice using it.' 
+    style_practice + 'Move the slider left by pressing "1" or right by pressing "2". The current value of your rating visualizes below the scale.<br>We record the slider position moment by moment throughout the video.<br><br>Try moving the slider to practice using it.' 
 ]
 
 // ------ BACKSTORY -----
@@ -724,14 +724,29 @@ for (var i = 0; i < instr_Intro.length; i++) {
     slider_start: start,
     slider_width: slider_width,
     units: "% Informative",
-    data: {task: 'Rating'},
+    data: {task: 'Practice'},
     on_finish: function(data) {
       time_stamp(data)
     }
   };
 
 // Adding portraits
-timeline.push(portraits_preload)
+timeline.push(portraits_preload);
+timeline.push(continuous_rating);
+
+
+var instr_BackgroundIntro = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: style_instr + "If you experienced any issues in controling the scale, please let researchers know. <br><br> We will now review background information from the show. <br><br><br><br> Please press the <strong>SPACE BAR</strong> to continue</p>",    
+    choices: [' '],
+    data: {task: 'Instr_BackgroundIntro'},
+    on_finish: function(data) {
+      // Getting current time
+      time_stamp(data)
+    }
+  };
+  timeline.push(instr_BackgroundIntro);
+
 
 // | - - - - - Background Information - - - - - - -| 
 
@@ -787,10 +802,10 @@ var reveal = {
   render_on_canvas: false,
   choices: ['Y', 'y'],
   data: {task: 'Reveal'},
-  on_start: function(task) {
-    task.stimulus = portraits[cond]; 
-    task.stimulus_caption = [[style_background + names[cond] + '</p>']];
-    task.prompt = [style_question + '<strong>' + names[cond] +" is guilty of having murdered Elena Alves</strong>.<br><br><br>Please rate how informative each moment is towards your understand that " + names[cond] + " is guilty.<br><br><br><br> Please press the <strong>Y Key</strong> to confirm that you understand and to continue</p>"]
+  on_start: function(trial) {
+    trial.stimulus = [portraits[cond]];
+    trial.stimulus_caption = [style_background + names[cond] + '</p>'];
+    trial.prompt= [style_question + '<strong>' + names[cond] +" is guilty of having murdered Elena Alves</strong>.<br><br><br>Please rate how informative each moment is towards your understand that " + names[cond] + " is guilty.<br><br><br><br> Please press the <strong>Y Key</strong> to confirm that you understand and to continue</p>"];
   },
   on_finish: function(data) {
     // Getting current time
